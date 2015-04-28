@@ -1,0 +1,18 @@
+Package: drrecr
+Type: Package
+Title: A set of tools to reconcile and evaluate DR events
+Version: 0.1
+Date: 2015-04-12
+Author: Who wrote it
+Maintainer: Who to complain to <yourfault@somewhere.net>
+Description: More about what it does (maybe more than one line)
+License: What license is it under?
+LazyData: TRUE
+Imports: dplyr,
+    assertthat,
+    caret,
+    tidyr,
+    e1071,
+    klaR
+Suggests: knitr
+VignetteBuilder: knitr

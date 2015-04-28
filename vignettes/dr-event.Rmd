@@ -1,0 +1,23 @@
+---
+title: "DR Event"
+author: "Steve Brooks"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+Define a DR Event
+```
+#DR Event Definition
+event_1 <- dr_event(ymd_hm("2015 3 19 9:50"), hours(3), energy, Time)
+```
+---
+Evaluate a DR Event using several different baselines
+  * 10 previous similar day average
+  * Minimum 2 hours prior
+  * Minimum 30 minutes prior
+```
+eval_event(event_1)
+```
