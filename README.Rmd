@@ -23,6 +23,11 @@ event_1 <- dr_event(ymd_hm("2015 3 19 9:50"), hours(3), energy, Time)
 eval_event(event_1)
 
 ```
+Use the devtools package to install:
+```{r, eval = FALSE}
+devtools::install_github("sabrooks/drrecr")
+```
+
 
 
 ```{r, echo = FALSE}

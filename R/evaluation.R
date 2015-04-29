@@ -66,28 +66,28 @@ eval_event <- function(event, grace = minutes(5)){
     dplyr::arrange(desc(energy))%>%
     dplyr::slice(1)
   
-  results.df <- data_frame(c(method = "2 hour prior",
+  results.df <- rbind(data_frame(method = "2 hour prior",
                              value = base_2hr$energy,
-                             start = base_2hr$time),
-                           c(method = "30 minute prior",
-                             value = base_30min$energy,
-                             start = base_30min$time),
-                           c(method = "5 minute prior",
-                             value = base_5min$energy,
-                             start = base_5min$time))
+                             event.stamp = base_2hr$time),
+                      data_frame(method = "30 minute prior",
+                                 value = base_30min$energy,
+                                 event.stamp = base_30min$time),
+                      data_frame(method = "5 minute prior",
+                                 value = base_5min$energy,
+                                 event.stamp = base_5min$time),
+                      data_frame(method = "10 day average",
+                                 value = base_10d$energy,
+                                 event.stamp = int_end(curtailment_interval)),
+                      data_frame(method = "Curtailment",
+                                 value = curtailment$energy,
+                                 event.stamp = curtailment$time))
+  
+  results = list(df = results.df,
+                 curt_int = curtailment_interval)
+ 
+  plot <- plot_event(event$energy_data, results)
 
-
-#   results = list(base_10d = base_10d,
-#                  base_2hr = base_2hr,
-#                  base_30min = base_30min,
-#                  base_5min = base_5min,
-#                  event_interval = event$event_interval,
-#                  curtailment_interval = curtailment_interval,
-#                  curtailment_max = curtailment)
-# 
-#   plot <- plot_event(event$energy_data, results)
-
-  return(results.df)
+  return(plot)
 
 
 }
@@ -95,35 +95,33 @@ eval_event <- function(event, grace = minutes(5)){
 plot_event <- function(energy.df, dr_results){
 
   #Generate an interval of the day containing the DR event
-  event.start <- int_start(dr_results$event_interval)
+  event.start <- int_start(dr_results$curt_int)
   event.day.start <- ymd_h(paste(year(event.start),
                            month(event.start),
                            day(event.start),
                            0))
   event.day <- event.day.start %--% (event.start + days(1))
   
-  cur_label <- data_frame(list(xval = dr_results$curtailment_max,
-                    yval = int_start(dr_results$curtailment_interval),
-                    label = "Curtailment Max"))
+  #Pull methods data.frame
+  dr_methods <- dr_results$df%>%
+    group_by(value, event.stamp)%>%
+    summarise(method = paste(method, collapse = ","))
 
   energy.df%>%
     dplyr::filter(time %within% event.day)%>%
     ggplot2::ggplot(aes(x = time, y = energy))+
     geom_area(alpha = 0.2)+
     geom_line()+
-    geom_hline(data = dr_results$curtailment_max,
-               aes(yintercept = energy))+
-    geom_text(data = cur_label,
-              aes(xval, yval, 
-                  label = label, vjust = -1))+
-    geom_hline(data = dr_results$base_2hr,
-               aes(yintercept = energy))+
-    geom_hline(data = dr_results$base_30min,
-               aes(yintercept = energy))+
-    geom_hline(data = dr_results$base_5min,
-               aes(yintercept = energy))+
-    geom_hline(data = dr_results$base_10d,
-             aes(yintercept = energy))+
+    geom_hline(data = dr_methods,
+               aes(yintercept = value),
+               color = "grey40",
+               linetype = "dashed")+
+    geom_point(data = dr_methods,
+               aes(x = event.stamp, y = value),
+               color = "grey40")+
+    geom_text(data = dr_methods,
+              aes(event.stamp, value,
+                  label = paste(method), hjust = 0, vjust = -0.25))+
     scale_x_datetime(expand = c(0,0))+
     theme_bw()
 }
