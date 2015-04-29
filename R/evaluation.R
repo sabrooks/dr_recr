@@ -65,19 +65,29 @@ eval_event <- function(event, grace = minutes(5)){
     filter(time %within% curtailment_interval)%>%
     dplyr::arrange(desc(energy))%>%
     dplyr::slice(1)
+  
+  results.df <- data_frame(c(method = "2 hour prior",
+                             value = base_2hr$energy,
+                             start = base_2hr$time),
+                           c(method = "30 minute prior",
+                             value = base_30min$energy,
+                             start = base_30min$time),
+                           c(method = "5 minute prior",
+                             value = base_5min$energy,
+                             start = base_5min$time))
 
 
-  results = list(base_10d = base_10d,
-                 base_2hr = base_2hr,
-                 base_30min = base_30min,
-                 base_5min = base_5min,
-                 event_interval = event$event_interval,
-                 curtailment_interval = curtailment_interval,
-                 curtailment_max = curtailment)
+#   results = list(base_10d = base_10d,
+#                  base_2hr = base_2hr,
+#                  base_30min = base_30min,
+#                  base_5min = base_5min,
+#                  event_interval = event$event_interval,
+#                  curtailment_interval = curtailment_interval,
+#                  curtailment_max = curtailment)
+# 
+#   plot <- plot_event(event$energy_data, results)
 
-  plot <- plot_event(event$energy_data, results)
-
-  return(plot)
+  return(results.df)
 
 
 }
@@ -91,6 +101,10 @@ plot_event <- function(energy.df, dr_results){
                            day(event.start),
                            0))
   event.day <- event.day.start %--% (event.start + days(1))
+  
+  cur_label <- data_frame(list(xval = dr_results$curtailment_max,
+                    yval = int_start(dr_results$curtailment_interval),
+                    label = "Curtailment Max"))
 
   energy.df%>%
     dplyr::filter(time %within% event.day)%>%
@@ -99,6 +113,9 @@ plot_event <- function(energy.df, dr_results){
     geom_line()+
     geom_hline(data = dr_results$curtailment_max,
                aes(yintercept = energy))+
+    geom_text(data = cur_label,
+              aes(xval, yval, 
+                  label = label, vjust = -1))+
     geom_hline(data = dr_results$base_2hr,
                aes(yintercept = energy))+
     geom_hline(data = dr_results$base_30min,
