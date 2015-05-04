@@ -4,7 +4,7 @@
 #' eval_event(event)
 #' @export
 #'
-eval_event <- function(event, grace = minutes(5)){
+eval_event <- function(event, prod, grace = minutes(5)){
 
   #Consolidate any sub meters------
   event$energy_data <- event$energy_data%>%
@@ -15,21 +15,58 @@ eval_event <- function(event, grace = minutes(5)){
   #Curtailment Interval
   curtailment_interval <- (int_start(event$event_interval)+grace)%--%
     int_end(event$event_interval)
+  
+  curtailment_day = floor_date(int_start(curtailment_interval),"day")
 
   #Baselines ------------
 
   #10 day average --------
   # This approach averages the curtailment period (not an hourly average)
-  base_10d <- NULL
+  base_10d.df <- NULL
   for(i in 1:10){
-    base_10d<- event$energy_data%>%
+    base_10d.df<- event$energy_data%>%
       filter(time %within% int_shift(curtailment_interval, -days(i)))%>%
       mutate(baseline.day = paste("day", i))%>%
-      bind_rows(base_10d)
+      bind_rows(base_10d.df)
   }
-  base_10d <- base_10d%>%
+  base_10d <- base_10d.df%>%
     summarise(energy = mean(energy, na.rm = TRUE))
-
+  
+#   10 day adjusted average.-------------- Place holder for more complicated
+#   model adjustment.  Calculates a simple linear model from daily production and
+#   energy.  The coefficient of the linear model is used to adjust the daily averages. 
+#   
+#   energy.prod.df <- event$energy_data%>%
+#     mutate(time = as.factor(floor_date(time, "day")))%>%
+#     group_by(time)%>%
+#     summarise(energy = sum(energy, na.rm = TRUE))%>%
+#     inner_join(prod%>%mutate(time = as.factor(time)),
+#                by = time)%>%
+#     mutate(time = ymd(time))
+#   
+#   #Simple linear model (forces intercept to 0)
+#   lin.model <- lm(energy ~ 0 + flow, data = energy.prod.df)
+#   adj.coef <- coef(lin.model)[1] # adjustment coefficient
+#   
+#   curtailment_day.df <- energy.prod.df%>%
+#     dplyr::filter(time == curtailment_day)
+#   
+#   #Constructs a data.frame of daily adjustment factors
+#   daily_adj <-base_10d.df%>%
+#     mutate(day = floor_date(time, "day"))%>%
+#     group_by(day)%>%
+#     summarise(energy.adj = sum(energy, na.rm = TRUE))%>%
+#     ungroup()%>%
+#     mutate(time = as.factor(day))%>%
+#     dplyr::select(-day)
+#     left_join(energy.prod.df%>%mutate(time = as.factor(time)), by = time)%>%
+#     mutate(time = ymd(time))
+#     
+#     energy.prod.df%>%
+#     dplyr::filter(time %within% ((curtailment_day - days(10))%--%(curtailment_day - days(1))))%>%
+#     mutate(adj = (curtailment_day.df$flow-flow)*adj.coef,
+#            energy_adj = energy + adj)%>%
+#     summarise(energy = mean(energy_adj, na.rm = TRUE))
 
   #2hr pre baseline ---------
   int_2hr <- (int_start(event$event_interval) - hours(2))%--%

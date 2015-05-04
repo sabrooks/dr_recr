@@ -1,8 +1,19 @@
-production <- read.csv("~/prod.data.csv")%>%
+prod <- read.csv("~/prod.data.csv")%>%
   dplyr::select(Time.Stamp:D_UV2FLOW_ACC)%>%
-  rename(Time = Time.Stamp)
+  rename(Time = Time.Stamp)%>%
+  mutate_each(., funs(.-lag(.)), -Time)%>%
+  mutate_each(., funs(ifelse(. < 0, 0,.)), -Time)%>%
+  mutate_each(., funs(ifelse(. == max(., na.rm = TRUE), 0,.)), -Time)%>%
+  slice(-1)%>%
+  gather(meter, flow, -Time)%>%
+  mutate(Time = mdy_hm(Time),
+         time = floor_date(Time, "day"))%>%
+  dplyr::select(-Time)%>%
+  group_by(time)%>%
+  summarise(flow = sum(flow, na.rm = TRUE))
 
-devtools::use_data(production)
+
+devtools::use_data(prod, overwrite = TRUE)
 
 model_d_h(production, energy)
 
