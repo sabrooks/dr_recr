@@ -115,3 +115,37 @@ similar_days_plot_results <- function(results){
     add_axis("x", title = "Actual Day")%>%
     add_axis("y", title = "Sunday")
 }
+
+#' Function to summarize a dataframe with a time column.
+#'
+#'
+#' @param df A dataframe 
+#' @param time.col the column name of column containing Posixct
+#' interval(df, time.col)
+#' @export
+#'
+interval <- function(df, time.col){
+    
+  assert_that(is.data.frame(df))
+    #Does not check that df$time.col is time
+    
+  time.col <- lazyeval::lazy(time.col)
+  
+  df <- df%>%
+    dplyr::rename_(time = time.col)
+  
+  time.span <- df%>%
+    dplyr::summarize(min = min(time),
+                     max = max(time))%>%
+    dplyr::transmute(min%--%max)
+    
+  df <-df%>%
+    dplyr::mutate(int = (lag(time)%--%time)/dminutes(1))%>%
+    dplyr::count(int)
+  
+  results <- c(time.span = time.span,
+               df = df)
+  
+  return(results)
+  
+}
