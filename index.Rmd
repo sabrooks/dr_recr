@@ -4,8 +4,16 @@ author: "Steve Brooks"
 date: "May 7, 2015"
 output: html_document
 ---
+# Description
+**DR RECR** a set of tools for doing analysis of DR events.
 
-This package provides a set of tools for doing analysis of DR events.
+## Pre-Processing
+Pre-processing functions include function to clean incoming data and classify.
+
+### Similar days
+
+##Evaluate
+
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
