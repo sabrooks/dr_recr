@@ -2,6 +2,7 @@ library(dplyr)
 library(assertthat)
 library(caret)
 library(e1071)
+library(lubridate)
 
 library(tidyr)
 
@@ -148,4 +149,21 @@ interval <- function(df, time.col){
   
   return(results)
   
+}
+
+ar <- function(df, time.col){
+
+  assert_that(is.data.frame(df))
+  #Does not check that df$time.col is time  
+  
+  time.col <- lazyeval::lazy(time.col)
+  
+  df <- df%>%
+    dplyr::rename_(time = time.col)%>%
+    gather(meter, energy, -time)%>%
+    dplyr::group_by(time)%>%
+    summarise(energy = sum(energy, na.rm = TRUE))%>%
+    select(-time)
+    
+  acf(df)
 }
