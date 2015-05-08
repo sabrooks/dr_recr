@@ -17,6 +17,17 @@ devtools::use_data(prod, overwrite = TRUE)
 
 model_d_h(production, energy)
 
+#--more cleaning
+prod <- read.csv("~/prod.data.csv")%>%
+  dplyr::select(Time.Stamp:D_UV2FLOW_ACC)%>%
+  rename(Time = Time.Stamp)%>%
+  mutate_each(., funs(.-lag(.)), -Time)%>%
+  mutate_each(., funs(ifelse(. < 0, 0,.)), -Time)%>%
+  mutate_each(., funs(ifelse(. == max(., na.rm = TRUE), 0,.)), -Time)%>%
+  slice(-1)%>%
+  filter(complete.cases(.))%>%
+  mutate(Time = mdy_hm(Time))
+
 #===========Data Cleaning ==========
 energy <- read_csv("~/Documents/data sets/energy.data.full.csv")%>%
   mutate(Time = mdy_hm(`Time Stamp`))%>%
