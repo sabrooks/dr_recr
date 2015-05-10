@@ -69,33 +69,15 @@ eval_event <- function(event, prod, grace = minutes(5)){
 #     summarise(energy = mean(energy_adj, na.rm = TRUE))
 
   #2hr pre baseline ---------
-  int_2hr <- (int_start(event$event_interval) - hours(2))%--%
-    int_start(event$event_interval)
-
-  base_2hr <- event$energy_data%>%
-    filter(time %within% int_2hr)%>%
-    dplyr::arrange(energy)%>%
-    dplyr::slice(1)
+  base_2hr <- within.day.baseline(event, hours(2))
 
   #30min pre baseline ---------
-  int_30min <- (int_start(event$event_interval) - minutes(30))%--%
-    int_start(event$event_interval)
-
-  base_30min <- event$energy_data%>%
-    filter(time %within% int_30min)%>%
-    dplyr::arrange(energy)%>%
-    dplyr::slice(1)
+  base_30min <- within.day.baseline(event, minutes(30))
 
   #5 min pre baseline ---------
   # Possible, but needs granular data.
-  int_5min <- (int_start(event$event_interval) - minutes(5))%--%
-     int_start(event$event_interval)
-
-   base_5min <- event$energy_data%>%
-     filter(time %within% int_5min)%>%
-     dplyr::arrange(energy)%>%
-     dplyr::slice(1)
-
+  base_5min <- within.day.baseline(event, minutes(5))
+    
   #Curtailment max
 
   curtailment <- event$energy_data%>%
