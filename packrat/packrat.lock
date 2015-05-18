@@ -138,13 +138,6 @@ Source: CRAN
 Version: 0.5
 Hash: 6b3d62cb5f5ec2674978f22d00aa919f
 
-Package: devtools
-Source: CRAN
-Version: 1.7.0
-Hash: 56919e22e0d3f7131e93bda1a869730e
-Requires: RCurl, digest, evaluate, httr, jsonlite, memoise, roxygen2,
-    rstudioapi, whisker
-
 Package: dichromat
 Source: CRAN
 Version: 2.0-0
@@ -195,6 +188,11 @@ Version: 0.4.1
 Hash: 409c438440952999f71b11bec44d66d7
 Requires: assertthat, dplyr, htmltools, jsonlite, lazyeval, magrittr,
     shiny
+
+Package: git2r
+Source: CRAN
+Version: 0.10.1
+Hash: 6454ce963e12973e157c55838740b1f1
 
 Package: gtable
 Source: CRAN

@@ -26,6 +26,12 @@ dr_event <- function(start, dur, energy.data, time){
   assert_that(event.interval%within%data.interval)
 
   event <- list(event_interval = event.interval, energy_data = energy.data)
+  
+  class(event) <- "DRevent"
+  
   return(event)
 
 }
+
+
+

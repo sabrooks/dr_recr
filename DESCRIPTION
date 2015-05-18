@@ -13,6 +13,8 @@ Imports: dplyr,
     caret,
     tidyr,
     e1071,
-    klaR
-Suggests: knitr
+    klaR,
+    testthat
+Suggests: knitr,
+    testthat
 VignetteBuilder: knitr
